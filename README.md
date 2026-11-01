@@ -28,3 +28,5 @@ Needs macOS 14+, Swift 5.10+, and the `claude` and `codex` CLIs installed and lo
 The CLIs run in `~/Library/Application Support/DeskAgents/workspace`. Claude runs with no tools and Codex runs in a read-only sandbox.
 
 The sprites are drawn in code (`Sources/DeskAgents/Sprites.swift`): Claude from rectangles, Codex from a pixel grid.
+
+Unofficial fan project, not affiliated with or endorsed by Anthropic or OpenAI. Claude, Codex and their mascots belong to their respective owners.
