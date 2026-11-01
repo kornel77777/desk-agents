@@ -1,6 +1,6 @@
 # Desk Agents
 
-Pixel versions of the Claude and Codex mascots live along the bottom of your Mac desktop. Claude is the terracotta critter and Codex is the blue cloud-headed bot with a terminal face. They wander, hop, sit, nap and make small talk when they bump into each other. Click one to open a small chat with it.
+Pixel versions of the Claude and Codex mascots live along the bottom of your Mac desktop. Claude is the terracotta critter and Codex is the blue cloud-headed bot with a terminal face. They wander, hop, sit and nap. They trade AI-agent-meme banter when they bump into each other, mutter one-liners when alone, and complain when you throw them. Click one to open a small chat with it.
 
 Chats go through each tool's own CLI (`claude -p`, `codex exec`), so they run on your existing logins and subscriptions. No API keys.
 

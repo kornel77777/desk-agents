@@ -69,6 +69,8 @@ final class Stage: NSObject, AgentViewDelegate {
     private var exchange: Exchange?
     private var lastExchangeEnded: TimeInterval = 0
     private var lastLiveChatter: TimeInterval = -.infinity
+    private var bubbleEnds: TimeInterval = 0  // for one-off lines outside a conversation
+    private var nextQuip = CACurrentMediaTime() + .random(in: 8...15)
     private var press: Press?
     private var minX: CGFloat = 0
     private var maxX: CGFloat = 0
@@ -175,7 +177,13 @@ final class Stage: NSObject, AgentViewDelegate {
         if let exchange {
             advance(exchange, now: now)
         } else {
+            if bubbleOwner != nil && now >= bubbleEnds { hush() }
             maybeStartExchange(now: now)
+            maybeQuip(now: now)
+        }
+        for agent in agents where agent.landedHard {
+            agent.landedHard = false
+            blurt(agent, Chatter.landedLine(), now: now)
         }
         layoutViews()
     }
@@ -238,8 +246,24 @@ final class Stage: NSObject, AgentViewDelegate {
         for agent in agents { agent.isSpeaking = false }
     }
 
+    /// A one-off line outside a conversation.
+    private func blurt(_ agent: Agent, _ text: String, now: TimeInterval) {
+        guard exchange == nil, !chat.isOpen else { return }
+        say(agent, text)
+        bubbleEnds = now + max(2.4, 1.0 + Double(text.count) * 0.065)
+    }
+
+    /// Every so often one of them mutters something to nobody in particular.
+    private func maybeQuip(now: TimeInterval) {
+        guard now >= nextQuip else { return }
+        nextQuip = now + .random(in: 18...40)
+        let candidates = agents.filter { !$0.isAirborne && $0.activity != .dragged && $0.activity != .listening }
+        guard bubble.isHidden, !chat.isOpen, press == nil, let agent = candidates.randomElement() else { return }
+        blurt(agent, Chatter.quip(for: agent.kind, asleep: agent.activity == .sleeping), now: now)
+    }
+
     private func maybeStartExchange(now: TimeInterval) {
-        guard !chat.isOpen, press == nil, now - lastExchangeEnded > 14 else { return }
+        guard !chat.isOpen, press == nil, bubble.isHidden, now - lastExchangeEnded > 14 else { return }
         for (i, a) in agents.enumerated() {
             for b in agents[(i + 1)...] {
                 guard a.isFree, b.isFree, !a.isHovered, !b.isHovered else { continue }
@@ -344,6 +368,7 @@ final class Stage: NSObject, AgentViewDelegate {
             agent.activity = .dragged
             agent.vx = 0
             agent.vy = 0
+            if Double.random(in: 0..<1) < 0.6 { blurt(agent, Chatter.pickedUpLine(), now: now) }
         }
         agent.x = point.x - p.grab.dx
         agent.y = max(0, point.y - p.grab.dy - groundY)
@@ -385,6 +410,7 @@ final class Stage: NSObject, AgentViewDelegate {
             return
         }
         if let exchange { finish(exchange, now: now) }  // no bubbles behind the chat
+        hush()
         let companions = agents.filter { $0 !== agent }.map(\.kind)
         let anchor = agent.view.frame.offsetBy(dx: window.frame.minX, dy: window.frame.minY)
         chat.open(agent, anchor: anchor, companions: companions)

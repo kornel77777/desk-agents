@@ -57,6 +57,7 @@ final class Agent {
     var isThinking = false
     var isHovered = false
     var hasUnread = false
+    var landedHard = false  // read and cleared by the stage
     var lastChat: [AgentKind: TimeInterval] = [:]
 
     private var blinkEnds: TimeInterval = 0
@@ -116,8 +117,9 @@ final class Agent {
                 y = 0
                 vy = 0
                 vx = 0
-                if impact > 900 && activity == .idle {
-                    setActivity(.sitting, for: 1.8, now: now)  // a little dazed
+                if impact > 900 {
+                    landedHard = true
+                    if activity == .idle { setActivity(.sitting, for: 1.8, now: now) }  // a little dazed
                 }
             }
             return
